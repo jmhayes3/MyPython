@@ -1,4 +1,3 @@
-// Lexer code adapted from source code at https://www.dreamincode.net/forums/topic/153718-fundamentals-of-parsing/
 /*
 	The following code parses C/C++ source and prints out a list of tokens.
 	The code is intended to be used as an example of parsing, and nothing
