@@ -27,8 +27,8 @@
 #include <fstream>
 #include <string>
 #include <list>
+#include <vector>
 #include <cctype>
-#include <stack>
 
 using namespace std;
 
@@ -45,9 +45,15 @@ class base_token
 		type_of_token token_type;
 	public:
 		base_token(type_of_token token) : token_type(token) { };
+        int get_token_type();
+		virtual string get_token_value() = 0;
 		virtual int parse_token(fstream& stream, int input_char) = 0;
 		virtual void print_token() = 0;
 };
+
+int base_token::get_token_type() {
+    return token_type;
+}
 
 // A token that may contain a symbol
 class symbol_token : public base_token
@@ -56,8 +62,13 @@ class symbol_token : public base_token
 		string symbol;
 	public:
 		symbol_token() : base_token(t_symbol) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string symbol_token::get_token_value() {
+    return symbol;
 };
 
 // A token that represents an integer
@@ -67,8 +78,13 @@ class integer_token : public base_token
 		string integer_string;
 	public:
 		integer_token() : base_token(t_integer) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string integer_token::get_token_value() {
+    return integer_string;
 };
 
 // A token that represents a literal
@@ -78,8 +94,13 @@ class literal_token : public base_token
 		string literal_string;
 	public:
 		literal_token() : base_token(t_literal) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string literal_token::get_token_value() {
+    return literal_string;
 };
 
 // A token that represents a constant literal (e.g. 'A')
@@ -89,8 +110,13 @@ class constant_token : public base_token
 		string constant_string;
 	public:
 		constant_token() : base_token(t_constant) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string constant_token::get_token_value() {
+    return constant_string;
 };
 
 // A token that represents a punctuation or separator
@@ -100,8 +126,13 @@ class punctuation_token : public base_token
 		string punctuation_string;
 	public:
 		punctuation_token() : base_token(t_punctuation) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string punctuation_token::get_token_value() {
+    return punctuation_string;
 };
 
 // A token that represents whitespace
@@ -109,8 +140,13 @@ class whitespace_token : public base_token
 {
 	public:
 		whitespace_token() : base_token(t_whitespace) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string whitespace_token::get_token_value() {
+    return "0";
 };
 
 // A token that represents an eol
@@ -118,8 +154,13 @@ class eol_token : public base_token
 {
 	public:
 		eol_token() : base_token(t_eol) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string eol_token::get_token_value() {
+    return "0";
 };
 
 // A token that represents an indent
@@ -131,8 +172,13 @@ class indent_token : public base_token
 		indent_token(int current_indent) : base_token(t_indent) {
             indent_level = current_indent;
         };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string indent_token::get_token_value() {
+    return "0";
 };
 
 // A token that represents an dedent
@@ -144,8 +190,13 @@ class dedent_token : public base_token
 		dedent_token(int current_indent) : base_token(t_dedent) {
             dedent_level = current_indent;
         };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string dedent_token::get_token_value() {
+    return "0";
 };
 
 // A token that represents an eof
@@ -153,8 +204,13 @@ class eof_token : public base_token
 {
 	public:
 		eof_token() : base_token(t_eof) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string eof_token::get_token_value() {
+    return "0";
 };
 
 // A token that represents an illegal character
@@ -164,8 +220,13 @@ class invalid_token : public base_token
 		int invalid_character;
 	public:
 		invalid_token() : base_token(t_invalid_token) { };
+        string get_token_value();
 		int parse_token(fstream& stream, int input_char);
 		void print_token();
+};
+
+string invalid_token::get_token_value() {
+    return "0";
 };
 
 // The C++ token parser
@@ -176,8 +237,21 @@ class token_parser
 		list<base_token *> token_list;
 	public:
 		token_parser(fstream& stream) : source_stream(stream) { };
+        vector<pair<int, string> > get_token_vector();
 		bool parse_tokens();
 		void print_tokens();
+};
+
+vector<pair<int, string> > token_parser::get_token_vector() {
+    vector<pair<int, string> > token_vector;
+	list<base_token *>::iterator iterator;
+	iterator = token_list.begin();
+	while(iterator != token_list.end()) {
+        pair<int, string> p = make_pair((*iterator)->get_token_type(), (*iterator)->get_token_value());
+        token_vector.push_back(p);
+		++iterator;
+	}
+    return token_vector;
 };
 
 // parse the rest of a symbol
@@ -553,46 +627,11 @@ bool token_parser::parse_tokens() {
 				// Remove any comments from the source
 				if (input_char == '#') {
 					int peek_character = source_stream.peek();
-					// if (peek_character == '/') {
-						// Remove the line comment
                     while (peek_character != 0x0A && !source_stream.eof()) {
                         peek_character = source_stream.get();
                     }
                     token = new(nothrow) eol_token;
                     break;
-					// }
-					// if (peek_character == '*') {
-					// 	// Remove a block comment
-					// 	while (true) {
-					// 		peek_character = source_stream.get();
-					// 		if (peek_character == -1) {
-					// 			cout << "error: block comment not terminated before EOF" << endl;
-					// 			exit(0);
-					// 		}
-					// 		if (peek_character == 0x0A) {
-					// 			token = new(nothrow) eol_token;
-					// 			// Add the token to the end of the list
-					// 			token_list.push_back(token);
-					// 			continue;
-					// 		}
-					// 		if (peek_character == '*') {
-					// 			peek_character = source_stream.get();
-					// 			if (peek_character == -1) {
-					// 				cout << "error: block comment not terminated before EOF" << endl;
-					// 				exit(0);
-					// 			}
-					// 			if (peek_character == '/') {
-					// 				// We need to ensure that a whitespace token
-					// 				// is created to ensure /* */ in the middle
-					// 				// of a source line is processed correctly.
-					// 				input_char = source_stream.get();
-					// 				input_char = ' ';
-					// 				token = new(nothrow) whitespace_token;
-					// 				break;
-					// 			}
-					// 		}
-					// 	}
-					// }
 				}
 				if (isalpha(input_char) || input_char == '_') {
 					// Start of a symbol sequence
@@ -600,11 +639,12 @@ bool token_parser::parse_tokens() {
 					break;
 				}
 				if (input_char == 0x0A) {
-					// EOL
+					// Handle newlines, indent, and dedent
                     int spaces = 0;
                     int p = source_stream.peek();
                     if (isspace(p)) {
                         int g = source_stream.get();
+                        spaces++;
                         while (g != 0x0A && !source_stream.eof()) {
                             p = source_stream.peek();
                             if (isspace(p)) {
@@ -702,4 +742,7 @@ int main(int argc, char** argv) {
 	token_parser parser(source);
 	parser.parse_tokens();
 	parser.print_tokens();
+
+    // token type (int), token value (string)
+    vector<pair<int, string> > token_vector = parser.get_token_vector();
 }
