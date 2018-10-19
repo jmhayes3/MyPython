@@ -1,28 +1,3 @@
-/*
-	The following code parses C/C++ source and prints out a list of tokens.
-	The code is intended to be used as an example of parsing, and nothing
-	else. Having said that, it must be pointed out that whilst this parser
-	does correctly identify and process C/C++ tokens, there are tokens
-	parsed that would not exist when a true C++ compiler tokenised it's
-	input. Preprocessor tokenization is implemented in phase III of the 
-        compiler front-end and such tokens as #, ## would not be seen (i.e. they
-        would have been processed in phase III). Furthermore, tokens enclosed in
-        single quotes would be converted directly into their integer equivalents.
-        Also, unicode characters and unicode sequences are not processed by this
-	example.
-
-	I have endeavoured to put a few checks in the parser to ensure that 
-	double quoted literals and block comments are terminated before the end
-	of file, but this code assumes that the source provided is actually 
-	compilable!!
-
-	The code has been compiled and tested under the Microsoft VC++ version
-	10, B2 Release and no guarantee can be made as to it's compatibility with
-	either other versions of VC++, or any other C++ compiler.
-
-	If you have any problems, with this code please do not hesitate to ask.
-*/
-
 #include <iostream>
 #include <fstream>
 #include <string>
